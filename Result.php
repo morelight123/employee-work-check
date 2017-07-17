@@ -27,24 +27,9 @@ class Result extends Controller{
         $result['org_id']=$filter['org_id'];
         $result['username']=$filter['username'];
         $filter['place']=empty($_GET['place'])?3:$_GET['place'];
-        //var_dump($filter['place']);
         $result['list']=$this->ResultModel->kpiScore($filter);
+        //var_dump($result);
         $result['org']=$this->ResultModel->selectOrg();
-        // $filter = empty($_GET)?array():$_GET;
-        // $this->model('Task');
-        // $data['ZC_JQP'] = $this->TaskModel->getInfo(array('id'=>$_SESSION['task_id']),'ZC_JQP');//获取主任加权票
-        // $this->model('TaskUser');
-        // $TaskUser=$this->TaskUserModel->getList($_SESSION['task_id']);
-        // foreach ($TaskUser as $key => $value) {
-        //     $this->model('UserScore');
-        //     $filter=empty($value)?array():$value;
-        //     $TaskUser[$key]['percent']=$this->UserScoreModel->getInfo($filter);//获取考核分析
-        // }
-        // $data['list']=$TaskUser;
-        // $this->model('Organization');
-        // $data['org']=$this->OrganizationModel->getList();//获取机构信息
-        // $data['query'] = $filter;
-        // //var_dump($data);
         $this->view($result);
     }
 
@@ -65,7 +50,7 @@ class Result extends Controller{
             }
             if(!empty($filter['username'])){    
             $this->model('result');
-            $filter['task_id']=empty($_SESSION['task_id'])?'':$_SESSION['task_id'];
+            $filter['task_id']=empty($_SESSION['task_id'])?'':$_SESSION['task_id'];//考核任务ID
             $data['list']=$this->ResultModel->particulars($filter);
         }
         $this->view($data);      
@@ -76,10 +61,10 @@ class Result extends Controller{
      * date 2017/07/15
      */
     public function normal(){
+		$task_id=empty($_SESSION['task_id'])?'':$_SESSION['task_id'];
 		$finalList=array();
         $username=empty($_GET['username'])?'':$_GET['username'];//用户名
         $data['username']=$username;
-
         $distinction=empty($_GET['like']['write'])?'':$_GET['like']['write'];//选中打分按钮或考核按钮的值
         $data['distinction']=$distinction;
 		$this->model('Resultnormal');
@@ -87,24 +72,28 @@ class Result extends Controller{
 		if($res==false) {
 			$data['list']=false;
 			$this->view($data);
-		}
-		else {
-		$res1=$this->ResultnormalModel->searchlist($res[0]['id'], $distinction);
-		if ($distinction==1) {$temp="user_id";}
-		else {$temp="assess_id";}
-		foreach ($res1 as $item) {
-			$temp99=$this->ResultnormalModel->searchbyID($item[$temp]);
-			if($temp99==false) continue;
-			$names=$temp99[0]['username'];
-			$temp2=$this->ResultnormalModel->return_org($temp99[0]['org_id']);
-			$temp3=$this->ResultnormalModel->return_place($temp99[0]['place']);
-			array_push($finalList, array($item[$temp],$temp2,$names , $temp3, $item['status']?"√":"")); //分别是id，部门，姓名，职业，打分状态
-		}
-		
-		$data['list']=$finalList;
-        $this->view($data);
-		}
+		}else {
+			$res1=$this->ResultnormalModel->searchlist($res[0]['id'], $distinction,$task_id);//返回'kpi_user.user_id', 'user.org_id','user.username','user.place', 'kpi_user.status'
+    		if ($distinction==1) {$temp="user_id";}
+    		else {$temp="assess_id";}
 
+    		foreach ($res1 as $key => $item){
+    			$res1[$key]['place']=$this->ResultnormalModel->return_place($item['place']);
+				$res1[$key]['status']=$item['status']?"√":"";
+			}
+            //var_dump($res1);
+    		/*foreach ($res1 as $item) {
+    			$temp99=$this->ResultnormalModel->searchbyID($item[$temp]);//返回'username','org_id','place'
+    			if($temp99==false) continue;
+    			$names=$temp99[0]['username'];
+    			$temp2=$this->ResultnormalModel->return_org($temp99[0]['org_id']);
+    			$temp3=$this->ResultnormalModel->return_place($temp99[0]['place']);
+    			array_push($finalList, array($item[$temp],$temp2,$names , $temp3, $item['status']?"√":"")); //分别是id，部门，姓名，职业，打分状态
+    		}	
+    		*/	
+    		$data['list'] = $res1;
+            $this->view($data);
+		}
     }
 
 

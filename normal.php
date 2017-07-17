@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="<?php echo $assetUrl;?>/css/public/global.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo $assetUrl;?>/css/result/public.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo $assetUrl;?>/css/base/org.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo $assetUrl;?>/css/result/details.css" />
     <style type="text/css">
         .tip b{color:#30a1f2;font-size:16px;}
     </style>
@@ -51,16 +52,17 @@
                         </tr>
                         <tr id="msg" <?php if(!empty($list))echo "style='display:none;'";?>><td colspan="7" style="text-align:center;color:red;">暂无数据</td></tr>
 						<?php 
+						$i=1;
 						if ($list) {
 						foreach ($list as $key => $value) { ?>
 							<tr>
-							<td><?php echo $value['0'] ?></td>
-							<td><?php echo $value['1'] ?></td>
-							<td><?php echo $value['2'] ?></td>
-							<td><?php echo $value['3'] ?></td>
-							<td><?php echo $value['4'] ?></td>
+							<td><?php echo $i ?></td>
+							<td><?php echo $value['name'] ?></td>
+							<td><?php echo $value['username'] ?></td>
+							<td><?php echo $value['place'] ?></td>
+							<td><?php echo $value['status'] ?></td>
 							</tr>
-						<?php }
+						<?php ++$i;}
 						}  
 						//else { ?>
 						<!--<tr><td></td>
@@ -87,6 +89,10 @@
 						-->
                     </table>
                 </div>
+                <div class="tip" style="display:none;">
+                    <i class="layui-icon">&#xe645;</i>
+                    请输入想查看的对象
+                </div>
             </div>            
         </div>
     </div>
@@ -96,6 +102,15 @@ layui.use(['form', 'jquery','layer'], function(){
     var form = layui.form();
     var layer=layui.layer;
     var show=$("#show").val();
+
+    var href=location.href;
+    if(href.indexOf("username=")>-1){
+        $(".table").show();
+        $(".tip").hide();
+    }else{
+        $(".table").hide();
+        $(".tip").show();
+    }
     $("#search").click(function(){
         if($(".searchType").val()==""){
             $(".errMes").text("请选择打分主体或考核对象");
